@@ -60,36 +60,32 @@ const opts = {
 const englishParser = new English();
 const sortByRange = (a, b) => a.range[0] - b.range[0];
 
+const addSourceNode = (source, start, end) => ({
+  type: 'SourceNode',
+  value: source.slice(start, end),
+  range: [start, end]
+});
+
+const addParagraphNode = node => ({
+  type: 'ParagraphNode',
+  children: englishParser.parse(node.value).children,
+  range: [node.start, node.end]
+});
+
 function astToNlcst(ast, source) {
   var englishChunks = [];
   traverse(ast, {
     JSXText(path) {
-      englishChunks.push({
-        type: 'ParagraphNode',
-        children: englishParser.parse(path.node.value).children,
-        range: [path.node.start, path.node.end]
-      });
+      englishChunks.push(addParagraphNode(path.node));
     },
     TemplateElement(path) {
       const stringValue = path.node.value.raw;
       if ((stringValue.match(/\n/g) || []).length > 2 || stringValue.match(/[A-Z]/)) {
-        englishChunks.push({
-          type: 'ParagraphNode',
-          children: englishParser.parse(stringValue).children,
-          range: [path.node.start, path.node.end]
-        });
+        englishChunks.push(addParagraphNode(path.node));
       }
     }
   });
   englishChunks.sort(sortByRange);
-
-  function getSource(start, end) {
-    return {
-      type: 'SourceNode',
-      value: source.slice(start, end),
-      range: [start, end]
-    };
-  }
 
   if (!englishChunks.length) {
     return;
@@ -97,13 +93,13 @@ function astToNlcst(ast, source) {
 
   var gaps = [];
   if (englishChunks[0].range[0] !== 0) {
-    gaps.push(getSource(0, englishChunks[0].range[0] - 1));
+    gaps.push(addSourceNode(source, 0, englishChunks[0].range[0] - 1));
   }
   for (var i = 0; i < englishChunks.length - 1; i++) {
-    gaps.push(getSource(englishChunks[i].range[1] + 1, englishChunks[i + 1].range[0] - 1));
+    gaps.push(addSourceNode(source, englishChunks[i].range[1] + 1, englishChunks[i + 1].range[0] - 1));
   }
   if (englishChunks[englishChunks.length - 1].range[1] !== source.length) {
-    gaps.push(getSource(englishChunks[englishChunks.length - 1].range[1] + 1, source.length));
+    gaps.push(addSourceNode(source, englishChunks[englishChunks.length - 1].range[1] + 1, source.length));
   }
 
   return {
