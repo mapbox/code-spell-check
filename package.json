@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "spell-check source code",
   "main": "index.js",
+  "bin": "index.js",
   "scripts": {
     "test": "tap test"
   },
@@ -23,7 +24,6 @@
     "p-all": "^1.0.0",
     "parse-english": "^4.0.0",
     "pify": "^2.3.0",
-    "retext": "^5.0.0",
     "retext-spell": "^2.2.0",
     "tap": "^10.3.0",
     "unified": "^6.1.1",

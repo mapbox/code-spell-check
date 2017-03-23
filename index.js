@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const dictionary = require('dictionary-en-us');
 const spell = require('retext-spell');
 const report = require('vfile-reporter');
@@ -10,8 +12,6 @@ const vfile = require('vfile');
 const u = require('unist-builder');
 const unified = require('unified');
 const English = require('parse-english');
-
-const inputs = process.argv.slice(2);
 
 var personal = `
 Mapbox
@@ -112,48 +112,56 @@ function astToNlcst(ast, source) {
   };
 }
 
-pAll(
-  inputs.map(filename => {
-    return () =>
-      pify(fs.readFile)(filename, 'utf8')
-        .then(source => {
-          const ast = babylon.parse(source, opts);
-          const tree = astToNlcst(ast, source);
+function codeSpellCheck(inputs) {
+  return pAll(
+    inputs.map(filename => {
+      return () =>
+        pify(fs.readFile)(filename, 'utf8')
+          .then(source => {
+            const ast = babylon.parse(source, opts);
+            const tree = astToNlcst(ast, source);
 
-          if (!tree) {
-            return Promise.resolve(undefined);
-          }
+            if (!tree) {
+              return Promise.resolve(undefined);
+            }
 
-          return new Promise((resolve, reject) => {
-            unified()
-              .use(spell, {
-                dictionary,
-                personal
-              })
-              .run(
-                tree,
-                {
-                  path: filename
-                },
-                function(err, tree, file) {
-                  resolve(file);
-                }
-              );
+            return new Promise((resolve, reject) => {
+              unified()
+                .use(spell, {
+                  dictionary,
+                  personal
+                })
+                .run(
+                  tree,
+                  {
+                    path: filename
+                  },
+                  function(err, tree, file) {
+                    resolve(file);
+                  }
+                );
+            });
+          })
+          .then(file => {
+            if (file && file.messages.length) return Promise.resolve(file);
           });
-        })
-        .then(file => {
-          if (file && file.messages.length) return Promise.resolve(file);
-        });
-  }),
-  {
-    concurrency: 5
-  }
-)
-  .then(vfiles => {
-    const filesWithMessages = vfiles.filter(v => v);
-    console.error(report(filesWithMessages));
-  })
-  .catch(err => {
-    console.log(err);
-    console.log(err.stack);
-  });
+    }),
+    {
+      concurrency: 5
+    }
+  )
+    .then(vfiles => {
+      const filesWithMessages = vfiles.filter(v => v);
+      console.error(report(filesWithMessages));
+    })
+    .catch(err => {
+      console.log(err);
+      console.log(err.stack);
+    });
+}
+
+module.exports = codeSpellCheck;
+
+if (require.main == module) {
+  codeSpellCheck(process.argv.slice(2));
+}
