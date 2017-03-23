@@ -13,7 +13,7 @@ const u = require('unist-builder');
 const unified = require('unified');
 const English = require('parse-english');
 
-var personal = `
+const personal = `
 Mapbox
 Styleguide
 ViewController
@@ -73,7 +73,7 @@ const addParagraphNode = node => ({
 });
 
 function astToNlcst(ast, source) {
-  var englishChunks = [];
+  const englishChunks = [];
   traverse(ast, {
     JSXText(path) {
       englishChunks.push(addParagraphNode(path.node));
@@ -91,11 +91,11 @@ function astToNlcst(ast, source) {
     return;
   }
 
-  var gaps = [];
+  const gaps = [];
   if (englishChunks[0].range[0] !== 0) {
     gaps.push(addSourceNode(source, 0, englishChunks[0].range[0] - 1));
   }
-  for (var i = 0; i < englishChunks.length - 1; i++) {
+  for (let i = 0; i < englishChunks.length - 1; i++) {
     gaps.push(addSourceNode(source, englishChunks[i].range[1] + 1, englishChunks[i + 1].range[0] - 1));
   }
   if (englishChunks[englishChunks.length - 1].range[1] !== source.length) {
@@ -114,8 +114,7 @@ function codeSpellCheck(inputs) {
       return () =>
         pify(fs.readFile)(filename, 'utf8')
           .then(source => {
-            const ast = babylon.parse(source, opts);
-            const tree = astToNlcst(ast, source);
+            const tree = astToNlcst(babylon.parse(source, opts), source);
 
             if (!tree) {
               return Promise.resolve(undefined);
