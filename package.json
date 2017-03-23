@@ -1,0 +1,37 @@
+{
+  "name": "code-spell-check",
+  "version": "1.0.0",
+  "description": "spell-check source code",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test"
+  },
+  "keywords": [
+    "spell",
+    "check",
+    "code",
+    "react",
+    "babel"
+  ],
+  "author": "Tom MacWright",
+  "license": "ISC",
+  "dependencies": {
+    "babel-traverse": "^6.23.1",
+    "babylon": "^6.16.1",
+    "dictionary-en-us": "^1.2.0",
+    "nspell": "^1.0.2",
+    "p-all": "^1.0.0",
+    "parse-english": "^4.0.0",
+    "pify": "^2.3.0",
+    "retext": "^5.0.0",
+    "retext-spell": "^2.2.0",
+    "tap": "^10.3.0",
+    "unified": "^6.1.1",
+    "unist-builder": "^1.0.2",
+    "vfile": "^2.0.1",
+    "vfile-reporter": "^3.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^0.22.0"
+  }
+}
